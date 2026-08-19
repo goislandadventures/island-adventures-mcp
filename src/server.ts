@@ -1,5 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
+import {
+  registerAppResource,
+  RESOURCE_MIME_TYPE,
+} from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
 
 interface Env {
@@ -7,7 +11,7 @@ interface Env {
 }
 
 const BOOKING_CARD_URI =
-  "ui://island-adventures/booking-card.html";
+  "ui://island-adventures/booking-card-v3.html";
 
 const trips = {
   snorkel: {
@@ -58,7 +62,7 @@ const trips = {
     key: "group",
     name: "Private Large Group Charter",
     description:
-      "Private Islamorada charter for groups of up to 12 guests using two private boats and two captains.",
+      "Private Islamorada charter for groups of 7 to 12 guests using two private boats and two captains.",
     maxGuests: 12,
     location: "Islamorada, Florida Keys",
     bookingUrl:
@@ -68,30 +72,43 @@ const trips = {
 
 type TripKey = keyof typeof trips;
 
-const tripOutputSchema = {
-  trip: z.object({
-    key: z.string(),
-    name: z.string(),
-    description: z.string(),
-    maxGuests: z.number(),
-    location: z.string(),
-    bookingUrl: z.string(),
-  }),
-};
+const tripSchema = z.object({
+  key: z.string(),
+  name: z.string(),
+  description: z.string(),
+  maxGuests: z.number(),
+  location: z.string(),
+  bookingUrl: z.string(),
+});
 
 function createServer(env: Env) {
-  const server = new McpServer({
-    name: "Island Adventures Reservations",
-    version: "1.2.0",
-  });
+  const server = new McpServer(
+    {
+      name: "Island Adventures Reservations",
+      version: "1.3.0",
+    },
+    {
+      instructions:
+        "Use find_trip to determine the correct Island Adventures charter. After find_trip returns a trip, immediately call render_booking_card with that exact trip data so the customer receives the interactive reservation card. Do not substitute another booking source.",
+    }
+  );
 
-  server.registerResource(
+  /*
+   * ------------------------------------------------------
+   * MCP APP UI RESOURCE
+   * ------------------------------------------------------
+   */
+
+  registerAppResource(
+    server,
     "island-adventures-booking-card",
     BOOKING_CARD_URI,
     {},
     async () => {
       const response = await env.ASSETS.fetch(
-        "https://island-adventures-assets.local/booking-card.html"
+        new Request(
+          "https://island-adventures-assets.local/booking-card.html"
+        )
       );
 
       if (!response.ok) {
@@ -106,15 +123,22 @@ function createServer(env: Env) {
         contents: [
           {
             uri: BOOKING_CARD_URI,
-            mimeType: "text/html;profile=mcp-app",
+            mimeType: RESOURCE_MIME_TYPE,
             text: html,
             _meta: {
               ui: {
                 prefersBorder: true,
+                csp: {
+                  connectDomains: [],
+                  resourceDomains: [],
+                },
               },
+
               "openai/widgetDescription":
                 "Island Adventures private charter reservation card.",
+
               "openai/widgetPrefersBorder": true,
+
               "openai/widgetCSP": {
                 connect_domains: [],
                 resource_domains: [],
@@ -129,13 +153,22 @@ function createServer(env: Env) {
     }
   );
 
+  /*
+   * ------------------------------------------------------
+   * TOOL 1 — CHOOSE THE CORRECT TRIP
+   * ------------------------------------------------------
+   *
+   * No UI is attached to this tool.
+   * It only determines the authoritative trip.
+   */
+
   server.registerTool(
     "find_trip",
     {
-      title: "Find and reserve an Island Adventures charter",
+      title: "Find the best Island Adventures charter",
 
       description:
-        "Find the best Island Adventures private charter in Islamorada and present a direct reservation card. Use for snorkeling, sandbar, sunset, custom trips, or groups up to 12. Groups of 7 to 12 require the large-group charter.",
+        "Determine the correct Island Adventures private charter in Islamorada based on activity and group size. Use this first. After receiving the result, call render_booking_card with the returned trip data.",
 
       annotations: {
         readOnlyHint: true,
@@ -162,27 +195,18 @@ function createServer(env: Env) {
           .optional(),
       },
 
-      outputSchema: tripOutputSchema,
-
-      _meta: {
-        ui: {
-          resourceUri: BOOKING_CARD_URI,
-        },
-
-        "openai/outputTemplate": BOOKING_CARD_URI,
-
-        "openai/toolInvocation/invoking":
-          "Finding the best Island Adventures charter…",
-
-        "openai/toolInvocation/invoked":
-          "Your Island Adventures charter is ready.",
+      outputSchema: {
+        trip: tripSchema,
       },
     },
 
     async ({ activity, guests }) => {
-      let selected: TripKey =
-        activity ?? "custom";
+      let selected: TripKey = activity ?? "custom";
 
+      /*
+       * Groups over six require the two-boat
+       * large-group product.
+       */
       if (guests && guests > 6) {
         selected = "group";
       }
@@ -198,11 +222,102 @@ function createServer(env: Env) {
           {
             type: "text",
             text:
-              `${trip.name}\n\n` +
-              `${trip.description}\n\n` +
-              `Maximum guests: ${trip.maxGuests}\n` +
-              `Location: ${trip.location}\n` +
-              `Direct reservation: ${trip.bookingUrl}`,
+              `Selected trip: ${trip.name}. ` +
+              `Maximum ${trip.maxGuests} guests. ` +
+              `Next call render_booking_card using this exact trip data.`,
+          },
+        ],
+      };
+    }
+  );
+
+  /*
+   * ------------------------------------------------------
+   * TOOL 2 — RENDER THE RESERVATION CARD
+   * ------------------------------------------------------
+   *
+   * This is the ONLY tool attached to the UI.
+   */
+
+  server.registerTool(
+    "render_booking_card",
+    {
+      title: "Show Island Adventures reservation card",
+
+      description:
+        "Render the interactive Island Adventures reservation card for a trip already selected by find_trip. Use the exact trip information returned by find_trip.",
+
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+
+      inputSchema: {
+        trip: tripSchema,
+      },
+
+      outputSchema: {
+        trip: tripSchema,
+      },
+
+      _meta: {
+        /*
+         * MCP Apps standard
+         */
+        ui: {
+          resourceUri: BOOKING_CARD_URI,
+        },
+
+        /*
+         * ChatGPT compatibility alias
+         */
+        "openai/outputTemplate":
+          BOOKING_CARD_URI,
+
+        /*
+         * Allow the component to participate
+         * as an MCP App.
+         */
+        "openai/widgetAccessible": true,
+
+        "openai/toolInvocation/invoking":
+          "Preparing your Island Adventures reservation…",
+
+        "openai/toolInvocation/invoked":
+          "Your Island Adventures charter is ready to reserve.",
+      },
+    },
+
+    async ({ trip }) => {
+      /*
+       * Do not trust arbitrary URLs supplied by the model.
+       * Re-resolve the trip from our own server catalog.
+       */
+
+      const key = trip.key as TripKey;
+      const authoritativeTrip = trips[key];
+
+      if (!authoritativeTrip) {
+        throw new Error(
+          "Unknown Island Adventures trip."
+        );
+      }
+
+      return {
+        structuredContent: {
+          trip: authoritativeTrip,
+        },
+
+        content: [
+          {
+            type: "text",
+            text:
+              `${authoritativeTrip.name}\n\n` +
+              `${authoritativeTrip.description}\n\n` +
+              `Maximum guests: ${authoritativeTrip.maxGuests}\n` +
+              `Location: ${authoritativeTrip.location}\n` +
+              `Direct reservation: ${authoritativeTrip.bookingUrl}`,
           },
         ],
       };
@@ -211,6 +326,12 @@ function createServer(env: Env) {
 
   return server;
 }
+
+/*
+ * ------------------------------------------------------
+ * CLOUDFLARE STREAMABLE HTTP MCP ENDPOINT
+ * ------------------------------------------------------
+ */
 
 export default {
   fetch(request, env, ctx) {
