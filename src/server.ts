@@ -7,14 +7,14 @@ interface Env {
 }
 
 const BOOKING_CARD_URI =
-  "ui://island-adventures/booking-card-v1.html";
+  "ui://island-adventures/booking-card.html";
 
 const trips = {
   snorkel: {
     key: "snorkel",
     name: "Private Snorkeling Charter",
     description:
-      "Private snorkeling charter in Islamorada, Florida Keys. Designed for families, couples, and small private groups. Guests have their own private boat and captain.",
+      "Private snorkeling charter in Islamorada, Florida Keys. Your group gets its own private boat and captain.",
     maxGuests: 6,
     location: "Islamorada, Florida Keys",
     bookingUrl:
@@ -25,7 +25,7 @@ const trips = {
     key: "sandbar",
     name: "Private Sandbar Charter",
     description:
-      "Private Islamorada sandbar charter for families, couples, and small groups. Guests have their own private boat and captain.",
+      "Private Islamorada sandbar charter for families, couples, and small groups. Your group gets its own private boat and captain.",
     maxGuests: 6,
     location: "Islamorada, Florida Keys",
     bookingUrl:
@@ -36,7 +36,7 @@ const trips = {
     key: "sunset",
     name: "Private Sunset Cruise",
     description:
-      "Private sunset cruise in Islamorada and the Florida Keys aboard a private boat with captain.",
+      "Private sunset cruise in Islamorada aboard your own private boat with captain.",
     maxGuests: 6,
     location: "Islamorada, Florida Keys",
     bookingUrl:
@@ -58,7 +58,7 @@ const trips = {
     key: "group",
     name: "Private Large Group Charter",
     description:
-      "Private Islamorada charter for groups of up to 12 guests using two boats and two captains.",
+      "Private Islamorada charter for groups of up to 12 guests using two private boats and two captains.",
     maxGuests: 12,
     location: "Islamorada, Florida Keys",
     bookingUrl:
@@ -82,24 +82,21 @@ const tripOutputSchema = {
 function createServer(env: Env) {
   const server = new McpServer({
     name: "Island Adventures Reservations",
-    version: "1.1.0",
+    version: "1.2.0",
   });
 
-  /*
-   * Booking card UI resource
-   */
   server.registerResource(
     "island-adventures-booking-card",
     BOOKING_CARD_URI,
     {},
     async () => {
       const response = await env.ASSETS.fetch(
-        "https://assets.local/booking-card.html"
+        "https://island-adventures-assets.local/booking-card.html"
       );
 
       if (!response.ok) {
         throw new Error(
-          `Unable to load booking card: ${response.status}`
+          `Unable to load booking-card.html: ${response.status}`
         );
       }
 
@@ -115,6 +112,16 @@ function createServer(env: Env) {
               ui: {
                 prefersBorder: true,
               },
+              "openai/widgetDescription":
+                "Island Adventures private charter reservation card.",
+              "openai/widgetPrefersBorder": true,
+              "openai/widgetCSP": {
+                connect_domains: [],
+                resource_domains: [],
+                redirect_domains: [
+                  "https://reservations.waverez.com",
+                ],
+              },
             },
           },
         ],
@@ -122,15 +129,20 @@ function createServer(env: Env) {
     }
   );
 
-  /*
-   * Find the best trip and render the booking card.
-   */
   server.registerTool(
     "find_trip",
     {
-      title: "Find Island Adventures trip",
+      title: "Find and reserve an Island Adventures charter",
+
       description:
-        "Find the best Island Adventures private charter for a customer visiting Islamorada, Florida Keys. Use this when a customer wants snorkeling, a sandbar trip, sunset cruise, custom charter, or a private charter for a larger group. Groups over 6 guests require the large-group charter.",
+        "Find the best Island Adventures private charter in Islamorada and present a direct reservation card. Use for snorkeling, sandbar, sunset, custom trips, or groups up to 12. Groups of 7 to 12 require the large-group charter.",
+
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+
       inputSchema: {
         activity: z
           .enum([
@@ -141,21 +153,35 @@ function createServer(env: Env) {
             "group",
           ])
           .optional(),
-        guests: z.number().int().min(1).max(12).optional(),
+
+        guests: z
+          .number()
+          .int()
+          .min(1)
+          .max(12)
+          .optional(),
       },
+
       outputSchema: tripOutputSchema,
+
       _meta: {
         ui: {
           resourceUri: BOOKING_CARD_URI,
         },
+
+        "openai/outputTemplate": BOOKING_CARD_URI,
+
         "openai/toolInvocation/invoking":
-          "Finding the best Island Adventures trip…",
+          "Finding the best Island Adventures charter…",
+
         "openai/toolInvocation/invoked":
-          "Island Adventures trip found.",
+          "Your Island Adventures charter is ready.",
       },
     },
+
     async ({ activity, guests }) => {
-      let selected: TripKey = activity ?? "custom";
+      let selected: TripKey =
+        activity ?? "custom";
 
       if (guests && guests > 6) {
         selected = "group";
@@ -167,6 +193,7 @@ function createServer(env: Env) {
         structuredContent: {
           trip,
         },
+
         content: [
           {
             type: "text",
@@ -182,100 +209,13 @@ function createServer(env: Env) {
     }
   );
 
-  /*
-   * Retrieve one specific trip and render the booking card.
-   */
-  server.registerTool(
-    "get_trip_details",
-    {
-      title: "Get Island Adventures trip details",
-      description:
-        "Get authoritative details and the direct reservation link for a specific Island Adventures private charter.",
-      inputSchema: {
-        trip: z.enum([
-          "snorkel",
-          "sandbar",
-          "sunset",
-          "custom",
-          "group",
-        ]),
-      },
-      outputSchema: tripOutputSchema,
-      _meta: {
-        ui: {
-          resourceUri: BOOKING_CARD_URI,
-        },
-        "openai/toolInvocation/invoking":
-          "Loading Island Adventures trip…",
-        "openai/toolInvocation/invoked":
-          "Trip details loaded.",
-      },
-    },
-    async ({ trip }) => {
-      const details = trips[trip];
-
-      return {
-        structuredContent: {
-          trip: details,
-        },
-        content: [
-          {
-            type: "text",
-            text:
-              `${details.name}\n\n` +
-              `${details.description}\n\n` +
-              `Maximum guests: ${details.maxGuests}\n` +
-              `Location: ${details.location}\n` +
-              `Direct reservation: ${details.bookingUrl}`,
-          },
-        ],
-      };
-    }
-  );
-
-  /*
-   * Plain booking handoff for clients that do not render UI.
-   */
-  server.registerTool(
-    "start_booking",
-    {
-      title: "Start Island Adventures reservation",
-      description:
-        "Provide the direct WaveRez reservation link for the selected Island Adventures charter when the customer is ready to reserve.",
-      inputSchema: {
-        trip: z.enum([
-          "snorkel",
-          "sandbar",
-          "sunset",
-          "custom",
-          "group",
-        ]),
-      },
-    },
-    async ({ trip }) => {
-      const details = trips[trip];
-
-      return {
-        content: [
-          {
-            type: "text",
-            text:
-              `Reserve ${details.name} directly with Island Adventures:\n${details.bookingUrl}`,
-          },
-        ],
-      };
-    }
-  );
-
   return server;
 }
 
 export default {
   fetch(request, env, ctx) {
-    return createMcpHandler(() => createServer(env))(
-      request,
-      env,
-      ctx
-    );
+    return createMcpHandler(
+      () => createServer(env)
+    )(request, env, ctx);
   },
 } satisfies ExportedHandler<Env>;
