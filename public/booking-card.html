@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Island Adventures Reservation</title>
+
+  <style>
+    :root {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #17202a;
+      background: transparent;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 12px;
+      background: transparent;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+    }
+
+    .header {
+      padding: 18px 20px 12px;
+    }
+
+    .brand {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #5f6b76;
+      margin-bottom: 7px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .description {
+      margin: 10px 0 0;
+      color: #4b5563;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .details {
+      padding: 0 20px 18px;
+    }
+
+    .detail {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eef0f2;
+      font-size: 14px;
+    }
+
+    .detail:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: #6b7280;
+    }
+
+    .value {
+      font-weight: 650;
+      text-align: right;
+    }
+
+    .footer {
+      padding: 16px 20px 20px;
+      background: #f8fafc;
+    }
+
+    .reserve {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      background: #111827;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .reserve:hover {
+      opacity: 0.92;
+    }
+
+    .reserve:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .note {
+      margin: 10px 0 0;
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .loading {
+      padding: 24px;
+      text-align: center;
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+  <main id="app">
+    <div class="card">
+      <div class="loading">Loading Island Adventures trip…</div>
+    </div>
+  </main>
+
+  <script type="module">
+    const app = document.querySelector("#app");
+
+    let trip = null;
+    let rpcId = 0;
+    const pendingRequests = new Map();
+
+    const escapeHtml = (value = "") =>
+      String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    const render = () => {
+      if (!trip) return;
+
+      const maxGuests = trip.maxGuests
+        ? `${trip.maxGuests} guests`
+        : "See reservation page";
+
+      app.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div class="brand">Island Adventures · Islamorada</div>
+            <h2>${escapeHtml(trip.name)}</h2>
+            <p class="description">${escapeHtml(trip.description)}</p>
+          </div>
+
+          <div class="details">
+            <div class="detail">
+              <span class="label">Trip type</span>
+              <span class="value">Private charter</span>
+            </div>
+
+            <div class="detail">
+              <span class="label">Maximum group</span>
+              <span class="value">${escapeHtml(maxGuests)}</span>
+            </div>
+
+            <div class="detail">
+              <span class="label">Location</span>
+              <span class="value">Islamorada, Florida Keys</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <button id="reserve-button" class="reserve">
+              Reserve Now
+            </button>
+
+            <p class="note">
+              Continue to Island Adventures' secure WaveRez reservation page
+              to choose your date, time and complete your booking.
+            </p>
+          </div>
+        </div>
+      `;
+
+      document
+        .querySelector("#reserve-button")
+        .addEventListener("click", openReservation);
+    };
+
+    const updateFromResponse = (response) => {
+      const data = response?.structuredContent?.trip;
+
+      if (!data) return;
+
+      trip = data;
+      render();
+    };
+
+    const rpcNotify = (method, params) => {
+      window.parent.postMessage(
+        {
+          jsonrpc: "2.0",
+          method,
+          params,
+        },
+        "*"
+      );
+    };
+
+    const rpcRequest = (method, params) =>
+      new Promise((resolve, reject) => {
+        const id = ++rpcId;
+
+        pendingRequests.set(id, {
+          resolve,
+          reject,
+        });
+
+        window.parent.postMessage(
+          {
+            jsonrpc: "2.0",
+            id,
+            method,
+            params,
+          },
+          "*"
+        );
+      });
+
+    window.addEventListener(
+      "message",
+      (event) => {
+        if (event.source !== window.parent) return;
+
+        const message = event.data;
+
+        if (!message || message.jsonrpc !== "2.0") return;
+
+        if (typeof message.id === "number") {
+          const pending = pendingRequests.get(message.id);
+
+          if (!pending) return;
+
+          pendingRequests.delete(message.id);
+
+          if (message.error) {
+            pending.reject(message.error);
+            return;
+          }
+
+          pending.resolve(message.result);
+          return;
+        }
+
+        if (
+          message.method === "ui/notifications/tool-result"
+        ) {
+          updateFromResponse(message.params);
+        }
+      },
+      { passive: true }
+    );
+
+    const initializeBridge = async () => {
+      try {
+        await rpcRequest("ui/initialize", {
+          appInfo: {
+            name: "island-adventures-booking-card",
+            version: "1.0.0",
+          },
+          appCapabilities: {},
+          protocolVersion: "2026-01-26",
+        });
+
+        rpcNotify("ui/notifications/initialized", {});
+      } catch (error) {
+        console.error("MCP Apps initialization failed:", error);
+      }
+    };
+
+    const openReservation = async () => {
+      if (!trip?.bookingUrl) return;
+
+      const openai =
+        typeof window !== "undefined"
+          ? window.openai
+          : undefined;
+
+      try {
+        if (openai?.openExternal) {
+          await openai.openExternal({
+            href: trip.bookingUrl,
+            redirectUrl: false,
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("ChatGPT external navigation failed:", error);
+      }
+
+      window.open(
+        trip.bookingUrl,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    };
+
+    initializeBridge();
+  </script>
+</body>
+</html>
