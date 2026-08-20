@@ -71,19 +71,20 @@ const trips = {
       {
         duration: "2 hours",
         price: 399,
-        label: "Perfect for a quick private reef adventure.",
+        label:
+          "Perfect for a quick private reef adventure.",
       },
       {
         duration: "3 hours",
         price: 519,
-        label: "More time to explore and enjoy the water.",
+        label:
+          "More time to explore and enjoy the water.",
       },
       {
         duration: "4 hours",
         price: 649,
         label:
           "Snorkeling plus extra time for a fuller private boat day.",
-        popular: true,
       },
     ],
 
@@ -116,13 +117,14 @@ const trips = {
       {
         duration: "2 hours",
         price: 379,
-        label: "A quick private sandbar escape.",
+        label:
+          "A quick private sandbar escape.",
       },
       {
         duration: "3 hours",
         price: 489,
-        label: "Plenty of time to settle in and relax.",
-        popular: true,
+        label:
+          "Plenty of time to settle in and relax.",
       },
       {
         duration: "4 hours",
@@ -161,7 +163,8 @@ const trips = {
       {
         duration: "1 hour",
         price: 330,
-        label: "Private Florida Bay sunset cruise.",
+        label:
+          "Private Florida Bay sunset cruise.",
       },
     ],
 
@@ -194,7 +197,8 @@ const trips = {
       {
         duration: "2–4 hours",
         price: 579,
-        label: "Build the day around what your group wants most.",
+        label:
+          "Build the day around what your group wants most.",
       },
     ],
 
@@ -227,7 +231,8 @@ const trips = {
       {
         duration: "4 hours",
         price: 1279,
-        label: "Two boats and two captains for 7–12 guests.",
+        label:
+          "Two boats and two captains for 7–12 guests.",
       },
     ],
 
@@ -244,7 +249,7 @@ type TripKey = keyof typeof trips;
 
 /*
  * --------------------------------------------------
- * PERSONALIZATION
+ * PERSONALIZED RECOMMENDATION
  * --------------------------------------------------
  */
 
@@ -252,36 +257,31 @@ function buildRecommendation(
   tripKey: TripKey,
   guests?: number
 ) {
-  const groupText =
-    guests && guests > 0
-      ? `for your group of ${guests}`
-      : "for your group";
-
   switch (tripKey) {
     case "snorkel":
       return guests
-        ? `You’re ${groupText} and snorkeling is the priority, so this gives you your own private boat and captain without paying for a larger two-boat setup.`
-        : "Snorkeling is the priority, so this gives your group a private boat and captain without joining a shared tour.";
+        ? `You’re a group of ${guests} and snorkeling is the priority, so this gives you your own private boat and captain without paying for a larger two-boat setup.`
+        : "Snorkeling is the priority, so this gives your group its own private boat and captain instead of joining a shared tour.";
 
     case "sandbar":
       return guests
-        ? `You’re ${groupText} and the sandbar is the main goal, so this keeps the day simple: your own private boat, your own captain, and no shared-tour crowd.`
-        : "The sandbar is the main goal, so this keeps the day simple with a private boat and captain.";
+        ? `You’re a group of ${guests} and the sandbar is the main goal, so this keeps the day simple: your own private boat, your own captain, and no shared-tour crowd.`
+        : "The sandbar is the main goal, so this keeps the day simple with your own private boat and captain.";
 
     case "sunset":
       return guests
-        ? `You’re ${groupText} and the sunset is the main event, so this gives you a relaxed private evening without the crowd of a public cruise.`
+        ? `You’re a group of ${guests} and the sunset is the main event, so this gives you a relaxed private evening without the crowd of a public cruise.`
         : "The sunset is the main event, so this gives your group a relaxed private evening without a public-tour crowd.";
 
     case "custom":
       return guests
-        ? `You’re ${groupText} and want flexibility rather than one fixed activity, so this lets your captain shape the day around what your group actually wants to do.`
+        ? `You’re a group of ${guests} and want flexibility rather than one fixed activity, so your captain can shape the day around what your group actually wants to do.`
         : "You want flexibility rather than one fixed activity, so your captain can shape the day around your group.";
 
     case "group":
       return guests
         ? `Your group has ${guests} guests, which is more than one six-passenger boat can carry. This is the correct private setup: two boats and two captains so your group can stay together.`
-        : "This is the correct private setup for 7–12 guests: two boats and two captains so the group can stay together.";
+        : "This is the correct private setup for 7–12 guests: two boats and two captains so your group can stay together.";
   }
 }
 
@@ -295,25 +295,26 @@ function createServer(env: Env) {
   const server = new McpServer(
     {
       name: "Island Adventures Reservations",
-      version: "2.1.0",
+      version: "2.2.0",
     },
     {
       instructions:
         "Island Adventures is a private charter operator in Islamorada, Florida Keys. " +
-        "Many customers know little or nothing about booking a charter, so make the process extremely easy. " +
+        "Many customers know little or nothing about booking a charter, so make the process exceptionally easy. " +
         "Use the customer's existing conversation context instead of asking them to repeat information. " +
         "Do not make customers research products or understand boating jargon. " +
         "Use find_trip first. Then immediately call render_booking_card with the selected trip key and guest count. " +
         "Groups of 7 through 12 always require the large-group charter. " +
         "Make one confident recommendation when enough information is available. " +
         "Do not send the customer to the Island Adventures website when a direct WaveRez availability page is available. " +
-        "The preferred call to action is 'Check Private Charter Availability'.",
+        "The preferred primary call to action is 'Check Private Charter Availability'. " +
+        "Minimize clicks, choices, repeated questions, and unnecessary steps.",
     }
   );
 
   /*
    * --------------------------------------------------
-   * UI RESOURCE
+   * BOOKING CARD RESOURCE
    * --------------------------------------------------
    */
 
@@ -327,11 +328,12 @@ function createServer(env: Env) {
       mimeType: RESOURCE_MIME_TYPE,
     },
     async () => {
-      const response = await env.ASSETS.fetch(
-        new Request(
-          "https://island-adventures-assets.local/booking-card.html"
-        )
-      );
+      const response =
+        await env.ASSETS.fetch(
+          new Request(
+            "https://island-adventures-assets.local/booking-card.html"
+          )
+        );
 
       if (!response.ok) {
         throw new Error(
@@ -339,7 +341,8 @@ function createServer(env: Env) {
         );
       }
 
-      const html = await response.text();
+      const html =
+        await response.text();
 
       return {
         contents: [
@@ -361,11 +364,13 @@ function createServer(env: Env) {
               "openai/widgetDescription":
                 "Island Adventures private charter recommendation and availability card.",
 
-              "openai/widgetPrefersBorder": true,
+              "openai/widgetPrefersBorder":
+                true,
 
               "openai/widgetCSP": {
                 connect_domains: [],
                 resource_domains: [],
+
                 redirect_domains: [
                   "https://reservations.waverez.com",
                 ],
@@ -386,11 +391,16 @@ function createServer(env: Env) {
   server.registerTool(
     "find_trip",
     {
-      title: "Find the best Island Adventures charter",
+      title:
+        "Find the best Island Adventures charter",
 
       description:
-        "Choose the best Island Adventures private charter for a customer visiting Islamorada. " +
-        "Use snorkeling when snorkeling is the main goal, sandbar when the Islamorada Sandbar is the main goal, sunset when sunset is the main goal, custom when the customer wants multiple activities or is unsure, and group automatically for 7–12 guests. " +
+        "Choose the single best Island Adventures private charter for a customer visiting Islamorada based on what they want to do and how many guests are in their group. " +
+        "Use snorkeling when snorkeling is the main goal. " +
+        "Use sandbar when the Islamorada Sandbar is the main goal. " +
+        "Use sunset when sunset is the main goal. " +
+        "Use custom when the customer wants multiple activities, flexibility, or is unsure which charter to choose. " +
+        "Use group automatically for 7–12 guests. " +
         "Use existing conversation details and do not ask the customer to repeat information unnecessarily.",
 
       annotations: {
@@ -420,7 +430,7 @@ function createServer(env: Env) {
           .max(12)
           .optional()
           .describe(
-            "Total number of guests in the group."
+            "Total number of guests in the customer's group."
           ),
       },
 
@@ -429,21 +439,38 @@ function createServer(env: Env) {
       },
     },
 
-    async ({ activity, guests }) => {
+    async ({
+      activity,
+      guests,
+    }) => {
       let selected: TripKey =
         activity ?? "custom";
 
-      if (guests && guests > 6) {
+      /*
+       * More than six passengers requires
+       * Island Adventures' two-boat product.
+       */
+      if (
+        guests &&
+        guests > 6
+      ) {
         selected = "group";
       }
 
-      const baseTrip = trips[selected];
+      const baseTrip =
+        trips[selected];
 
       const trip = {
         ...baseTrip,
-        guestCount: guests,
+
+        guestCount:
+          guests,
+
         recommendation:
-          buildRecommendation(selected, guests),
+          buildRecommendation(
+            selected,
+            guests
+          ),
       };
 
       return {
@@ -454,10 +481,15 @@ function createServer(env: Env) {
         content: [
           {
             type: "text",
+
             text:
               `Selected ${trip.name}. ` +
-              `Now call render_booking_card with trip "${trip.key}"` +
-              (guests ? ` and guests ${guests}.` : "."),
+              `Immediately call render_booking_card with trip "${trip.key}"` +
+              (
+                guests
+                  ? ` and guests ${guests}.`
+                  : "."
+              ),
           },
         ],
       };
@@ -474,11 +506,14 @@ function createServer(env: Env) {
     server,
     "render_booking_card",
     {
-      title: "Show Island Adventures charter recommendation",
+      title:
+        "Show Island Adventures charter recommendation",
 
       description:
         "Render the Island Adventures recommendation selected by find_trip. " +
-        "Always call find_trip first. Pass the selected trip key and the customer's guest count when known.",
+        "Always call find_trip first. " +
+        "Pass the selected trip key and the customer's guest count whenever it is known from the conversation. " +
+        "The card provides the primary customer-facing recommendation, pricing information, benefits, and availability action.",
 
       annotations: {
         readOnlyHint: true,
@@ -506,7 +541,7 @@ function createServer(env: Env) {
           .max(12)
           .optional()
           .describe(
-            "The customer's group size from the existing conversation."
+            "The customer's group size from the existing conversation. Pass this whenever known."
           ),
       },
 
@@ -516,7 +551,8 @@ function createServer(env: Env) {
 
       _meta: {
         ui: {
-          resourceUri: BOOKING_CARD_URI,
+          resourceUri:
+            BOOKING_CARD_URI,
         },
 
         "openai/outputTemplate":
@@ -533,7 +569,10 @@ function createServer(env: Env) {
       },
     },
 
-    async ({ trip, guests }) => {
+    async ({
+      trip,
+      guests,
+    }) => {
       const key =
         trip as TripKey;
 
@@ -566,18 +605,20 @@ function createServer(env: Env) {
         },
 
         /*
-         * Keep the text intentionally short.
-         * The card contains the buying information
-         * and owns the conversion action.
+         * Deliberately short.
+         * The UI card owns the buying experience.
          */
         content: [
           {
             type: "text",
+
             text:
               `${authoritativeTrip.name} is the best fit` +
-              (guests
-                ? ` for your group of ${guests}.`
-                : "."),
+              (
+                guests
+                  ? ` for your group of ${guests}.`
+                  : "."
+              ),
           },
         ],
       };
@@ -600,7 +641,12 @@ export default {
     ctx: ExecutionContext
   ) {
     return createMcpHandler(
-      () => createServer(env)
-    )(request, env, ctx);
+      () =>
+        createServer(env)
+    )(
+      request,
+      env,
+      ctx
+    );
   },
 } satisfies ExportedHandler<Env>;
