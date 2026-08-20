@@ -86,22 +86,33 @@ function createServer(env: Env) {
   const server = new McpServer(
     {
       name: "Island Adventures Reservations",
-      version: "1.4.0",
+      version: "1.5.0",
     },
     {
       instructions:
-        "Use find_trip first to select the correct Island Adventures charter. Then immediately call render_booking_card with the exact trip returned by find_trip so the customer receives the interactive reservation card.",
+        "Island Adventures is a private charter operator in Islamorada, Florida Keys. " +
+        "Help customers who may know little or nothing about charter booking. " +
+        "Use plain language, avoid unnecessary boating jargon, and do not make customers research or compare confusing options. " +
+        "Use find_trip to determine the best charter from the customer's existing request. " +
+        "After find_trip returns a trip, immediately call render_booking_card using that trip key. " +
+        "Groups of 7 through 12 require the large-group charter. " +
+        "Do not send the customer to the Island Adventures website when a direct reservation path is available.",
     }
   );
 
   /*
-   * BOOKING CARD UI RESOURCE
+   * --------------------------------------------------
+   * ISLAND ADVENTURES BOOKING CARD RESOURCE
+   * --------------------------------------------------
    */
+
   registerAppResource(
     server,
     "Island Adventures Booking Card",
     BOOKING_CARD_URI,
     {
+      description:
+        "Interactive Island Adventures charter recommendation and reservation card.",
       mimeType: RESOURCE_MIME_TYPE,
     },
     async () => {
@@ -125,6 +136,43 @@ function createServer(env: Env) {
             uri: BOOKING_CARD_URI,
             mimeType: RESOURCE_MIME_TYPE,
             text: html,
+
+            /*
+             * IMPORTANT:
+             * CSP belongs on the RESOURCE CONTENT,
+             * not on the tool definition.
+             */
+            _meta: {
+              /*
+               * MCP Apps standard metadata
+               */
+              ui: {
+                prefersBorder: true,
+
+                csp: {
+                  connectDomains: [],
+                  resourceDomains: [],
+                },
+              },
+
+              /*
+               * ChatGPT compatibility metadata.
+               * WaveRez is only used as the destination
+               * of the Reserve Now action.
+               */
+              "openai/widgetDescription":
+                "Island Adventures private charter recommendation and reservation card.",
+
+              "openai/widgetPrefersBorder": true,
+
+              "openai/widgetCSP": {
+                connect_domains: [],
+                resource_domains: [],
+                redirect_domains: [
+                  "https://reservations.waverez.com",
+                ],
+              },
+            },
           },
         ],
       };
@@ -132,15 +180,20 @@ function createServer(env: Env) {
   );
 
   /*
-   * TOOL 1 — FIND THE CORRECT TRIP
+   * --------------------------------------------------
+   * TOOL 1: FIND THE BEST TRIP
+   * --------------------------------------------------
    */
+
   server.registerTool(
     "find_trip",
     {
-      title: "Find Island Adventures charter",
+      title: "Find the best Island Adventures charter",
 
       description:
-        "Select the correct Island Adventures private charter in Islamorada based on activity and group size. After this returns, call render_booking_card using the returned trip.",
+        "Choose the best Island Adventures private charter for a customer visiting Islamorada. " +
+        "Use snorkeling for guests who primarily want to snorkel, sandbar for guests primarily wanting the Islamorada sandbar, sunset for sunset trips, custom when the customer wants a mixed or personalized day, and group for 7 to 12 guests. " +
+        "Use the customer's existing conversation details whenever available instead of asking them to repeat information.",
 
       annotations: {
         readOnlyHint: true,
@@ -157,14 +210,20 @@ function createServer(env: Env) {
             "custom",
             "group",
           ])
-          .optional(),
+          .optional()
+          .describe(
+            "The customer's primary desired experience."
+          ),
 
         guests: z
           .number()
           .int()
           .min(1)
           .max(12)
-          .optional(),
+          .optional()
+          .describe(
+            "Total number of guests in the customer's group."
+          ),
       },
 
       outputSchema: {
@@ -173,7 +232,8 @@ function createServer(env: Env) {
     },
 
     async ({ activity, guests }) => {
-      let selected: TripKey = activity ?? "custom";
+      let selected: TripKey =
+        activity ?? "custom";
 
       if (guests && guests > 6) {
         selected = "group";
@@ -190,8 +250,8 @@ function createServer(env: Env) {
           {
             type: "text",
             text:
-              `Selected ${trip.name}. ` +
-              `Now call render_booking_card with this trip.`,
+              `Best match: ${trip.name}. ` +
+              `Use render_booking_card with trip "${trip.key}" to present the reservation experience.`,
           },
         ],
       };
@@ -199,12 +259,11 @@ function createServer(env: Env) {
   );
 
   /*
-   * TOOL 2 — RENDER THE ACTUAL CHATGPT CARD
-   *
-   * IMPORTANT:
-   * This MUST use registerAppTool(),
-   * not server.registerTool().
+   * --------------------------------------------------
+   * TOOL 2: RENDER THE BOOKING EXPERIENCE
+   * --------------------------------------------------
    */
+
   registerAppTool(
     server,
     "render_booking_card",
@@ -212,7 +271,8 @@ function createServer(env: Env) {
       title: "Show Island Adventures reservation",
 
       description:
-        "Display the interactive Island Adventures reservation card for the charter selected by find_trip.",
+        "Display the interactive Island Adventures reservation card for the charter selected by find_trip. " +
+        "Use this immediately after find_trip so the customer can continue toward booking without having to search the website.",
 
       annotations: {
         readOnlyHint: true,
@@ -220,8 +280,24 @@ function createServer(env: Env) {
         openWorldHint: false,
       },
 
+      /*
+       * We only pass the trip key back into the
+       * rendering tool. The server—not the model—
+       * supplies the authoritative name, description,
+       * capacity and reservation URL.
+       */
       inputSchema: {
-        trip: tripSchema,
+        trip: z
+          .enum([
+            "snorkel",
+            "sandbar",
+            "sunset",
+            "custom",
+            "group",
+          ])
+          .describe(
+            "The Island Adventures trip selected by find_trip."
+          ),
       },
 
       outputSchema: {
@@ -229,10 +305,17 @@ function createServer(env: Env) {
       },
 
       _meta: {
+        /*
+         * This is the only UI linkage required
+         * on the rendering TOOL.
+         */
         ui: {
           resourceUri: BOOKING_CARD_URI,
         },
 
+        /*
+         * Compatibility for ChatGPT hosts.
+         */
         "openai/outputTemplate":
           BOOKING_CARD_URI,
 
@@ -247,9 +330,8 @@ function createServer(env: Env) {
     },
 
     async ({ trip }) => {
-      const key = trip.key as TripKey;
-
-      const authoritativeTrip = trips[key];
+      const authoritativeTrip =
+        trips[trip as TripKey];
 
       if (!authoritativeTrip) {
         throw new Error(
@@ -280,8 +362,18 @@ function createServer(env: Env) {
   return server;
 }
 
+/*
+ * --------------------------------------------------
+ * CLOUDFLARE STATELESS STREAMABLE HTTP MCP HANDLER
+ * --------------------------------------------------
+ */
+
 export default {
-  fetch(request, env, ctx) {
+  fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ) {
     return createMcpHandler(
       () => createServer(env)
     )(request, env, ctx);
