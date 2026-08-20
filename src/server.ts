@@ -18,7 +18,7 @@ const OPENAI_CHALLENGE_PATH =
   "/.well-known/openai-apps-challenge";
 
 const OPENAI_CHALLENGE_TOKEN =
-  "qjNyani4CQnrkSb8T2te-moSBrL0FnE6tnZaEBysCb0";
+  "qjNyani4CQnrkSb8T2te-moSBrLOFnE6tnZaEBysCb0";
 
 /*
  * --------------------------------------------------
