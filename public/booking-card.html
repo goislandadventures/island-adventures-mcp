@@ -1,15 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+
   <title>Island Adventures Reservation</title>
 
   <style>
     :root {
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #17202a;
-      background: transparent;
+      color-scheme: light dark;
+
+      --bg: #ffffff;
+      --card: #ffffff;
+      --card-soft: #f7f8fa;
+      --text: #111827;
+      --muted: #667085;
+      --line: #e5e7eb;
+
+      --brand-green: #93c900;
+      --brand-orange: #f15a24;
+      --brand-blue: #334b9b;
+
+      --button: #111827;
+      --button-text: #ffffff;
+
+      --radius: 18px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #171717;
+        --card: #202020;
+        --card-soft: #292929;
+        --text: #f7f7f7;
+        --muted: #b6b6b6;
+        --line: #3a3a3a;
+        --button: #f5f5f5;
+        --button-text: #111111;
+      }
     }
 
     * {
@@ -18,306 +49,540 @@
 
     body {
       margin: 0;
-      padding: 12px;
+      padding: 0;
       background: transparent;
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 2px;
     }
 
     .card {
-      width: 100%;
-      max-width: 520px;
-      margin: 0 auto;
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
     }
 
-    .header {
-      padding: 18px 20px 12px;
+    .brand-bar {
+      height: 5px;
+      background:
+        linear-gradient(
+          90deg,
+          var(--brand-blue) 0 28%,
+          var(--brand-green) 28% 68%,
+          var(--brand-orange) 68% 100%
+        );
     }
 
-    .brand {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: #5f6b76;
-      margin-bottom: 7px;
+    .content {
+      padding: 22px 22px 18px;
     }
 
-    h2 {
-      margin: 0;
-      font-size: 22px;
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
       line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
+    }
+
+    .recommendation {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin: 14px 0 0;
+      padding: 7px 10px;
+      background: var(--card-soft);
+      border-radius: 999px;
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .recommendation-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 999px;
+      background: var(--brand-green);
     }
 
     .description {
-      margin: 10px 0 0;
-      color: #4b5563;
+      margin: 15px 0 0;
+      color: var(--muted);
       font-size: 15px;
-      line-height: 1.45;
+      line-height: 1.48;
     }
 
-    .details {
-      padding: 0 20px 18px;
+    .why {
+      margin: 18px 0 0;
+      padding: 14px 15px;
+      background: var(--card-soft);
+      border-radius: 13px;
     }
 
-    .detail {
+    .why-label {
+      margin: 0 0 5px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .why-text {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    .facts {
+      margin: 18px 0 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .fact {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 10px 0;
-      border-bottom: 1px solid #eef0f2;
+      gap: 18px;
+      min-height: 46px;
+      border-bottom: 1px solid var(--line);
       font-size: 14px;
     }
 
-    .detail:last-child {
-      border-bottom: 0;
+    .fact-label {
+      color: var(--muted);
     }
 
-    .label {
-      color: #6b7280;
-    }
-
-    .value {
-      font-weight: 650;
+    .fact-value {
       text-align: right;
+      font-weight: 750;
+      color: var(--text);
+    }
+
+    .promise {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 18px 0 0;
+    }
+
+    .promise-item {
+      min-height: 66px;
+      padding: 11px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: var(--card-soft);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.3;
+      font-weight: 700;
     }
 
     .footer {
-      padding: 16px 20px 20px;
-      background: #f8fafc;
+      padding: 16px 18px 17px;
+      background: var(--card-soft);
+      border-top: 1px solid var(--line);
     }
 
-    .reserve {
+    .button {
       width: 100%;
+      min-height: 48px;
+      appearance: none;
       border: 0;
       border-radius: 12px;
-      padding: 14px 18px;
-      background: #111827;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 750;
+      background: var(--button);
+      color: var(--button-text);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 800;
       cursor: pointer;
+      transition:
+        transform 120ms ease,
+        opacity 120ms ease;
     }
 
-    .reserve:hover {
+    .button:hover {
       opacity: 0.92;
     }
 
-    .reserve:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
+    .button:active {
+      transform: scale(0.992);
     }
 
-    .note {
-      margin: 10px 0 0;
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .booking-note {
+      margin: 9px 5px 0;
+      color: var(--muted);
       text-align: center;
-      color: #6b7280;
-      font-size: 12px;
-      line-height: 1.4;
+      font-size: 11.5px;
+      line-height: 1.35;
     }
 
     .loading {
-      padding: 24px;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 25px;
+      color: var(--muted);
       text-align: center;
-      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .error {
+      padding: 22px;
+      color: var(--text);
+    }
+
+    .error strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 520px) {
+      .content {
+        padding: 19px 17px 16px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .promise {
+        grid-template-columns: 1fr;
+      }
+
+      .promise-item {
+        min-height: 44px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <main id="app">
-    <div class="card">
-      <div class="loading">Loading Island Adventures trip…</div>
+  <div class="shell">
+    <div class="card" id="app">
+      <div class="loading">
+        Finding the easiest way to get you on the water…
+      </div>
     </div>
-  </main>
+  </div>
 
-  <script type="module">
-    const app = document.querySelector("#app");
+  <script>
+    const app = document.getElementById("app");
 
-    let trip = null;
-    let rpcId = 0;
-    const pendingRequests = new Map();
+    const tripExtras = {
+      snorkel: {
+        why:
+          "A strong fit when snorkeling is the main thing you want to do, without sharing the boat with another group.",
+        type: "Private snorkeling charter",
+        promise: [
+          "Your own private boat",
+          "Captain included",
+          "Up to 6 guests"
+        ]
+      },
 
-    const escapeHtml = (value = "") =>
-      String(value)
+      sandbar: {
+        why:
+          "Best when your crew mainly wants an easy, private day relaxing and playing at the Islamorada sandbar.",
+        type: "Private sandbar charter",
+        promise: [
+          "Your own private boat",
+          "Captain included",
+          "Up to 6 guests"
+        ]
+      },
+
+      sunset: {
+        why:
+          "Best when the sunset itself is the priority and you want a relaxed private cruise instead of a crowded tour boat.",
+        type: "Private sunset cruise",
+        promise: [
+          "Your own private boat",
+          "Captain included",
+          "Up to 6 guests"
+        ]
+      },
+
+      custom: {
+        why:
+          "Best when you do not want to choose just one activity. Your captain can shape the trip around what your group actually wants to do.",
+        type: "Private custom charter",
+        promise: [
+          "Your own private boat",
+          "Built around your group",
+          "Up to 6 guests"
+        ]
+      },
+
+      group: {
+        why:
+          "This is the right setup for 7–12 guests so your whole group can enjoy a private experience instead of joining a public tour.",
+        type: "Private large-group charter",
+        promise: [
+          "Two private boats",
+          "Two captains",
+          "Up to 12 guests"
+        ]
+      }
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
 
-    const render = () => {
-      if (!trip) return;
+    function renderTrip(data) {
+      const trip = data?.trip;
 
-      const maxGuests = trip.maxGuests
-        ? `${trip.maxGuests} guests`
-        : "See reservation page";
+      if (!trip) {
+        return;
+      }
+
+      const extras =
+        tripExtras[trip.key] ??
+        tripExtras.custom;
 
       app.innerHTML = `
-        <div class="card">
-          <div class="header">
-            <div class="brand">Island Adventures · Islamorada</div>
-            <h2>${escapeHtml(trip.name)}</h2>
-            <p class="description">${escapeHtml(trip.description)}</p>
+        <div class="brand-bar"></div>
+
+        <div class="content">
+          <div class="eyebrow">
+            Island Adventures · Islamorada
           </div>
 
-          <div class="details">
-            <div class="detail">
-              <span class="label">Trip type</span>
-              <span class="value">Private charter</span>
-            </div>
+          <h1>${escapeHtml(trip.name)}</h1>
 
-            <div class="detail">
-              <span class="label">Maximum group</span>
-              <span class="value">${escapeHtml(maxGuests)}</span>
-            </div>
-
-            <div class="detail">
-              <span class="label">Location</span>
-              <span class="value">Islamorada, Florida Keys</span>
-            </div>
+          <div class="recommendation">
+            <span class="recommendation-dot"></span>
+            Best match for your request
           </div>
 
-          <div class="footer">
-            <button id="reserve-button" class="reserve">
-              Reserve Now
-            </button>
+          <p class="description">
+            ${escapeHtml(trip.description)}
+          </p>
 
-            <p class="note">
-              Continue to Island Adventures' secure WaveRez reservation page
-              to choose your date, time and complete your booking.
+          <div class="why">
+            <p class="why-label">Why this fits</p>
+            <p class="why-text">
+              ${escapeHtml(extras.why)}
             </p>
+          </div>
+
+          <div class="facts">
+            <div class="fact">
+              <span class="fact-label">Experience</span>
+              <span class="fact-value">
+                ${escapeHtml(extras.type)}
+              </span>
+            </div>
+
+            <div class="fact">
+              <span class="fact-label">Group size</span>
+              <span class="fact-value">
+                Up to ${escapeHtml(trip.maxGuests)} guests
+              </span>
+            </div>
+
+            <div class="fact">
+              <span class="fact-label">Departure area</span>
+              <span class="fact-value">
+                ${escapeHtml(trip.location)}
+              </span>
+            </div>
+          </div>
+
+          <div class="promise">
+            ${extras.promise
+              .map(
+                (item) => `
+                  <div class="promise-item">
+                    ${escapeHtml(item)}
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+        </div>
+
+        <div class="footer">
+          <button
+            class="button"
+            id="reserveButton"
+            type="button"
+          >
+            Reserve This Private Charter
+          </button>
+
+          <div class="booking-note">
+            Continue directly to Island Adventures’ secure WaveRez reservation page to choose your date and complete the booking.
           </div>
         </div>
       `;
 
-      document
-        .querySelector("#reserve-button")
-        .addEventListener("click", openReservation);
-    };
+      const reserveButton =
+        document.getElementById("reserveButton");
 
-    const updateFromResponse = (response) => {
-      const data = response?.structuredContent?.trip;
+      reserveButton.addEventListener(
+        "click",
+        async () => {
+          const url = trip.bookingUrl;
 
-      if (!data) return;
-
-      trip = data;
-      render();
-    };
-
-    const rpcNotify = (method, params) => {
-      window.parent.postMessage(
-        {
-          jsonrpc: "2.0",
-          method,
-          params,
-        },
-        "*"
-      );
-    };
-
-    const rpcRequest = (method, params) =>
-      new Promise((resolve, reject) => {
-        const id = ++rpcId;
-
-        pendingRequests.set(id, {
-          resolve,
-          reject,
-        });
-
-        window.parent.postMessage(
-          {
-            jsonrpc: "2.0",
-            id,
-            method,
-            params,
-          },
-          "*"
-        );
-      });
-
-    window.addEventListener(
-      "message",
-      (event) => {
-        if (event.source !== window.parent) return;
-
-        const message = event.data;
-
-        if (!message || message.jsonrpc !== "2.0") return;
-
-        if (typeof message.id === "number") {
-          const pending = pendingRequests.get(message.id);
-
-          if (!pending) return;
-
-          pendingRequests.delete(message.id);
-
-          if (message.error) {
-            pending.reject(message.error);
+          if (!url) {
             return;
           }
 
-          pending.resolve(message.result);
+          reserveButton.disabled = true;
+          reserveButton.textContent =
+            "Opening reservation…";
+
+          try {
+            if (
+              window.openai &&
+              typeof window.openai.openExternal ===
+                "function"
+            ) {
+              await window.openai.openExternal({
+                href: url,
+                redirectUrl: false
+              });
+            } else {
+              window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Unable to open reservation:",
+              error
+            );
+
+            window.open(
+              url,
+              "_blank",
+              "noopener,noreferrer"
+            );
+          } finally {
+            reserveButton.disabled = false;
+            reserveButton.textContent =
+              "Reserve This Private Charter";
+          }
+        }
+      );
+
+      notifyHeight();
+    }
+
+    function notifyHeight() {
+      try {
+        if (
+          window.openai &&
+          typeof window.openai
+            .notifyIntrinsicHeight === "function"
+        ) {
+          window.openai.notifyIntrinsicHeight(
+            document.documentElement.scrollHeight
+          );
+        }
+      } catch (_) {}
+    }
+
+    function getInitialOutput() {
+      try {
+        return window.openai?.toolOutput;
+      } catch (_) {
+        return undefined;
+      }
+    }
+
+    const initialOutput = getInitialOutput();
+
+    if (initialOutput?.trip) {
+      renderTrip(initialOutput);
+    }
+
+    /*
+     * MCP Apps bridge fallback.
+     * OpenAI's current docs specify
+     * ui/notifications/tool-result for new results.
+     */
+    window.addEventListener(
+      "message",
+      (event) => {
+        if (event.source !== window.parent) {
+          return;
+        }
+
+        const message = event.data;
+
+        if (
+          !message ||
+          message.jsonrpc !== "2.0"
+        ) {
           return;
         }
 
         if (
-          message.method === "ui/notifications/tool-result"
+          message.method ===
+          "ui/notifications/tool-result"
         ) {
-          updateFromResponse(message.params);
+          const output =
+            message.params?.structuredContent;
+
+          if (output?.trip) {
+            renderTrip(output);
+          }
         }
       },
       { passive: true }
     );
 
-    const initializeBridge = async () => {
-      try {
-        await rpcRequest("ui/initialize", {
-          appInfo: {
-            name: "island-adventures-booking-card",
-            version: "1.0.0",
-          },
-          appCapabilities: {},
-          protocolVersion: "2026-01-26",
-        });
-
-        rpcNotify("ui/notifications/initialized", {});
-      } catch (error) {
-        console.error("MCP Apps initialization failed:", error);
-      }
-    };
-
-    const openReservation = async () => {
-      if (!trip?.bookingUrl) return;
-
-      const openai =
-        typeof window !== "undefined"
-          ? window.openai
-          : undefined;
-
-      try {
-        if (openai?.openExternal) {
-          await openai.openExternal({
-            href: trip.bookingUrl,
-            redirectUrl: false,
-          });
-          return;
-        }
-      } catch (error) {
-        console.error("ChatGPT external navigation failed:", error);
-      }
-
-      window.open(
-        trip.bookingUrl,
-        "_blank",
-        "noopener,noreferrer"
-      );
-    };
-
-    initializeBridge();
+    window.addEventListener(
+      "load",
+      notifyHeight,
+      { once: true }
+    );
   </script>
 </body>
 </html>
