@@ -11,7 +11,7 @@
 
     "run_worker_first": [
       "/mcp",
-      "/.well-known/openai-apps-challenge"
+      "/.well-known/*"
     ]
   }
 }
