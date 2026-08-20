@@ -12,11 +12,11 @@ interface Env {
 }
 
 const BOOKING_CARD_URI =
-  "ui://island-adventures/booking-card.html";
+  "ui://island-adventures/booking-card-v2.html";
 
 /*
  * --------------------------------------------------
- * DATA SCHEMAS
+ * SCHEMAS
  * --------------------------------------------------
  */
 
@@ -36,26 +36,23 @@ const tripSchema = z.object({
   bookingUrl: z.string(),
 
   startingPrice: z.number().optional(),
-
   options: z.array(optionSchema),
-
-  recommendation: z.string(),
-
   highlights: z.array(z.string()),
+
+  guestCount: z.number().optional(),
+  recommendation: z.string(),
 });
 
 /*
  * --------------------------------------------------
- * AUTHORITATIVE ISLAND ADVENTURES PRODUCT DATA
+ * AUTHORITATIVE ISLAND ADVENTURES DATA
  * --------------------------------------------------
  */
 
 const trips = {
   snorkel: {
     key: "snorkel",
-
-    name:
-      "Private Snorkeling Charter",
+    name: "Private Snorkeling Charter",
 
     description:
       "A relaxed private snorkeling day in Islamorada with your own boat and captain. Snorkel gear is included, and your captain chooses the best available location based on weather, water conditions, visibility, and safety.",
@@ -74,14 +71,12 @@ const trips = {
       {
         duration: "2 hours",
         price: 399,
-        label:
-          "Perfect for a quick private reef adventure.",
+        label: "Perfect for a quick private reef adventure.",
       },
       {
         duration: "3 hours",
         price: 519,
-        label:
-          "More time to explore and enjoy the water.",
+        label: "More time to explore and enjoy the water.",
       },
       {
         duration: "4 hours",
@@ -91,9 +86,6 @@ const trips = {
         popular: true,
       },
     ],
-
-    recommendation:
-      "Best when snorkeling is the main thing your group wants to experience.",
 
     highlights: [
       "Your own private boat",
@@ -105,9 +97,7 @@ const trips = {
 
   sandbar: {
     key: "sandbar",
-
-    name:
-      "Private Sandbar Charter",
+    name: "Private Sandbar Charter",
 
     description:
       "An easy private trip to the Islamorada Sandbar for your group to swim, float, relax, listen to music, and enjoy shallow Florida Keys water without joining a crowded party boat.",
@@ -126,14 +116,12 @@ const trips = {
       {
         duration: "2 hours",
         price: 379,
-        label:
-          "A quick private sandbar escape.",
+        label: "A quick private sandbar escape.",
       },
       {
         duration: "3 hours",
         price: 489,
-        label:
-          "Plenty of time to settle in and relax.",
+        label: "Plenty of time to settle in and relax.",
         popular: true,
       },
       {
@@ -143,9 +131,6 @@ const trips = {
           "Best when your group wants a longer, unhurried day on the water.",
       },
     ],
-
-    recommendation:
-      "Best when your group mainly wants an easy, relaxing day at the Islamorada Sandbar.",
 
     highlights: [
       "Your own private boat",
@@ -157,12 +142,10 @@ const trips = {
 
   sunset: {
     key: "sunset",
-
-    name:
-      "Private Sunset Cruise",
+    name: "Private Sunset Cruise",
 
     description:
-      "A private evening on Florida Bay for your group. Choose a relaxing sunset cruise or spend extra time on the water with a sandbar-and-sunset combination.",
+      "A private evening on Florida Bay for your group. Enjoy the sunset from your own private boat instead of a crowded sightseeing cruise.",
 
     maxGuests: 6,
 
@@ -174,22 +157,13 @@ const trips = {
 
     startingPrice: 330,
 
-    /*
-     * We know the durations, but we do not yet have
-     * independently verified current prices for each
-     * duration, so we do not invent them.
-     */
     options: [
       {
         duration: "1 hour",
         price: 330,
-        label:
-          "Private Florida Bay sunset cruise.",
+        label: "Private Florida Bay sunset cruise.",
       },
     ],
-
-    recommendation:
-      "Best when a relaxed private sunset experience is the main goal.",
 
     highlights: [
       "Your own private boat",
@@ -201,9 +175,7 @@ const trips = {
 
   custom: {
     key: "custom",
-
-    name:
-      "Private Custom Boat Charter",
+    name: "Private Custom Boat Charter",
 
     description:
       "A flexible private Islamorada boat day built around your group. Snorkel, visit the sandbar, cruise, sightsee, bar-hop, or combine activities while your captain helps shape the best plan for the conditions.",
@@ -218,22 +190,13 @@ const trips = {
 
     startingPrice: 579,
 
-    /*
-     * WaveRez confirms 2–4 hour options and a
-     * current starting price of $579. We leave
-     * unverified individual option prices out.
-     */
     options: [
       {
         duration: "2–4 hours",
         price: 579,
-        label:
-          "Build the day around what your group wants most.",
+        label: "Build the day around what your group wants most.",
       },
     ],
-
-    recommendation:
-      "Best when your group wants flexibility or a mix of different activities.",
 
     highlights: [
       "Your own private boat",
@@ -245,12 +208,10 @@ const trips = {
 
   group: {
     key: "group",
-
-    name:
-      "Private Large Group Charter",
+    name: "Private Large Group Charter",
 
     description:
-      "A coordinated private four-hour experience for 7–12 guests using two boats and two captains. Your group stays together while enjoying the flexibility of smaller private boats.",
+      "A coordinated private four-hour experience for 7–12 guests using two boats and two captains. Your group stays together while keeping the private-charter experience.",
 
     maxGuests: 12,
 
@@ -266,13 +227,9 @@ const trips = {
       {
         duration: "4 hours",
         price: 1279,
-        label:
-          "Two boats and two captains for 7–12 guests.",
+        label: "Two boats and two captains for 7–12 guests.",
       },
     ],
-
-    recommendation:
-      "The correct private-charter setup for groups larger than six.",
 
     highlights: [
       "Two private boats",
@@ -283,8 +240,50 @@ const trips = {
   },
 } as const;
 
-type TripKey =
-  keyof typeof trips;
+type TripKey = keyof typeof trips;
+
+/*
+ * --------------------------------------------------
+ * PERSONALIZATION
+ * --------------------------------------------------
+ */
+
+function buildRecommendation(
+  tripKey: TripKey,
+  guests?: number
+) {
+  const groupText =
+    guests && guests > 0
+      ? `for your group of ${guests}`
+      : "for your group";
+
+  switch (tripKey) {
+    case "snorkel":
+      return guests
+        ? `You’re ${groupText} and snorkeling is the priority, so this gives you your own private boat and captain without paying for a larger two-boat setup.`
+        : "Snorkeling is the priority, so this gives your group a private boat and captain without joining a shared tour.";
+
+    case "sandbar":
+      return guests
+        ? `You’re ${groupText} and the sandbar is the main goal, so this keeps the day simple: your own private boat, your own captain, and no shared-tour crowd.`
+        : "The sandbar is the main goal, so this keeps the day simple with a private boat and captain.";
+
+    case "sunset":
+      return guests
+        ? `You’re ${groupText} and the sunset is the main event, so this gives you a relaxed private evening without the crowd of a public cruise.`
+        : "The sunset is the main event, so this gives your group a relaxed private evening without a public-tour crowd.";
+
+    case "custom":
+      return guests
+        ? `You’re ${groupText} and want flexibility rather than one fixed activity, so this lets your captain shape the day around what your group actually wants to do.`
+        : "You want flexibility rather than one fixed activity, so your captain can shape the day around your group.";
+
+    case "group":
+      return guests
+        ? `Your group has ${guests} guests, which is more than one six-passenger boat can carry. This is the correct private setup: two boats and two captains so your group can stay together.`
+        : "This is the correct private setup for 7–12 guests: two boats and two captains so the group can stay together.";
+  }
+}
 
 /*
  * --------------------------------------------------
@@ -292,68 +291,47 @@ type TripKey =
  * --------------------------------------------------
  */
 
-function createServer(
-  env: Env
-) {
-  const server =
-    new McpServer(
-      {
-        name:
-          "Island Adventures Reservations",
-
-        version:
-          "2.0.0",
-      },
-      {
-        instructions:
-          "Island Adventures is a private charter operator in Islamorada, Florida Keys. " +
-
-          "Many customers know little or nothing about booking a charter. Make the experience extremely easy. " +
-
-          "Use the customer's existing ChatGPT conversation whenever possible instead of asking them to repeat information. " +
-
-          "Do not make customers research products or understand charter terminology. Determine the best fit for them. " +
-
-          "Use find_trip first. After a trip is selected, immediately call render_booking_card with the selected trip key. " +
-
-          "Groups of 7 through 12 require the large-group charter. " +
-
-          "Use plain English and make one confident recommendation when enough information is available. " +
-
-          "Do not send the customer to the Island Adventures website when the direct WaveRez availability page is available. " +
-
-          "The preferred call to action is 'Check Private Charter Availability'.",
-      }
-    );
+function createServer(env: Env) {
+  const server = new McpServer(
+    {
+      name: "Island Adventures Reservations",
+      version: "2.1.0",
+    },
+    {
+      instructions:
+        "Island Adventures is a private charter operator in Islamorada, Florida Keys. " +
+        "Many customers know little or nothing about booking a charter, so make the process extremely easy. " +
+        "Use the customer's existing conversation context instead of asking them to repeat information. " +
+        "Do not make customers research products or understand boating jargon. " +
+        "Use find_trip first. Then immediately call render_booking_card with the selected trip key and guest count. " +
+        "Groups of 7 through 12 always require the large-group charter. " +
+        "Make one confident recommendation when enough information is available. " +
+        "Do not send the customer to the Island Adventures website when a direct WaveRez availability page is available. " +
+        "The preferred call to action is 'Check Private Charter Availability'.",
+    }
+  );
 
   /*
    * --------------------------------------------------
-   * BOOKING CARD UI RESOURCE
+   * UI RESOURCE
    * --------------------------------------------------
    */
 
   registerAppResource(
     server,
-
     "Island Adventures Booking Card",
-
     BOOKING_CARD_URI,
-
     {
       description:
         "Interactive Island Adventures private charter recommendation and availability card.",
-
-      mimeType:
-        RESOURCE_MIME_TYPE,
+      mimeType: RESOURCE_MIME_TYPE,
     },
-
     async () => {
-      const response =
-        await env.ASSETS.fetch(
-          new Request(
-            "https://island-adventures-assets.local/booking-card.html"
-          )
-        );
+      const response = await env.ASSETS.fetch(
+        new Request(
+          "https://island-adventures-assets.local/booking-card.html"
+        )
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -361,54 +339,37 @@ function createServer(
         );
       }
 
-      const html =
-        await response.text();
+      const html = await response.text();
 
       return {
         contents: [
           {
-            uri:
-              BOOKING_CARD_URI,
-
-            mimeType:
-              RESOURCE_MIME_TYPE,
-
-            text:
-              html,
+            uri: BOOKING_CARD_URI,
+            mimeType: RESOURCE_MIME_TYPE,
+            text: html,
 
             _meta: {
               ui: {
-                prefersBorder:
-                  true,
+                prefersBorder: true,
 
                 csp: {
-                  connectDomains:
-                    [],
-
-                  resourceDomains:
-                    [],
+                  connectDomains: [],
+                  resourceDomains: [],
                 },
               },
 
               "openai/widgetDescription":
                 "Island Adventures private charter recommendation and availability card.",
 
-              "openai/widgetPrefersBorder":
-                true,
+              "openai/widgetPrefersBorder": true,
 
-              "openai/widgetCSP":
-                {
-                  connect_domains:
-                    [],
-
-                  resource_domains:
-                    [],
-
-                  redirect_domains:
-                    [
-                      "https://reservations.waverez.com",
-                    ],
-                },
+              "openai/widgetCSP": {
+                connect_domains: [],
+                resource_domains: [],
+                redirect_domains: [
+                  "https://reservations.waverez.com",
+                ],
+              },
             },
           },
         ],
@@ -418,100 +379,72 @@ function createServer(
 
   /*
    * --------------------------------------------------
-   * TOOL 1 — FIND THE BEST TRIP
+   * TOOL 1 — FIND BEST TRIP
    * --------------------------------------------------
    */
 
   server.registerTool(
     "find_trip",
-
     {
-      title:
-        "Find the best Island Adventures charter",
+      title: "Find the best Island Adventures charter",
 
       description:
-        "Choose the best Island Adventures private charter for a customer visiting Islamorada based on what they want to do and how many guests are in their group. " +
-
-        "Use snorkeling when snorkeling is the main goal. " +
-
-        "Use sandbar when the Islamorada Sandbar is the main goal. " +
-
-        "Use sunset when sunset is the main goal. " +
-
-        "Use custom when the customer wants a combination of activities or is unsure what product to choose. " +
-
-        "Use group automatically for 7–12 guests. " +
-
-        "Use existing conversation details instead of making customers repeat information.",
+        "Choose the best Island Adventures private charter for a customer visiting Islamorada. " +
+        "Use snorkeling when snorkeling is the main goal, sandbar when the Islamorada Sandbar is the main goal, sunset when sunset is the main goal, custom when the customer wants multiple activities or is unsure, and group automatically for 7–12 guests. " +
+        "Use existing conversation details and do not ask the customer to repeat information unnecessarily.",
 
       annotations: {
-        readOnlyHint:
-          true,
-
-        destructiveHint:
-          false,
-
-        openWorldHint:
-          false,
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
       },
 
       inputSchema: {
-        activity:
-          z
-            .enum([
-              "snorkel",
-              "sandbar",
-              "sunset",
-              "custom",
-              "group",
-            ])
-            .optional()
-            .describe(
-              "The customer's primary desired experience."
-            ),
+        activity: z
+          .enum([
+            "snorkel",
+            "sandbar",
+            "sunset",
+            "custom",
+            "group",
+          ])
+          .optional()
+          .describe(
+            "The customer's primary desired experience."
+          ),
 
-        guests:
-          z
-            .number()
-            .int()
-            .min(1)
-            .max(12)
-            .optional()
-            .describe(
-              "Total number of guests."
-            ),
+        guests: z
+          .number()
+          .int()
+          .min(1)
+          .max(12)
+          .optional()
+          .describe(
+            "Total number of guests in the group."
+          ),
       },
 
       outputSchema: {
-        trip:
-          tripSchema,
+        trip: tripSchema,
       },
     },
 
-    async ({
-      activity,
-      guests,
-    }) => {
-      let selected:
-        TripKey =
-        activity ??
-        "custom";
+    async ({ activity, guests }) => {
+      let selected: TripKey =
+        activity ?? "custom";
 
-      /*
-       * USCG passenger limits mean groups
-       * over six require the large-group
-       * two-boat product.
-       */
-      if (
-        guests &&
-        guests > 6
-      ) {
-        selected =
-          "group";
+      if (guests && guests > 6) {
+        selected = "group";
       }
 
-      const trip =
-        trips[selected];
+      const baseTrip = trips[selected];
+
+      const trip = {
+        ...baseTrip,
+        guestCount: guests,
+        recommendation:
+          buildRecommendation(selected, guests),
+      };
 
       return {
         structuredContent: {
@@ -520,12 +453,11 @@ function createServer(
 
         content: [
           {
-            type:
-              "text",
-
+            type: "text",
             text:
-              `Best match: ${trip.name}. ` +
-              `Call render_booking_card with trip "${trip.key}" so the customer can review the recommendation and check private charter availability.`,
+              `Selected ${trip.name}. ` +
+              `Now call render_booking_card with trip "${trip.key}"` +
+              (guests ? ` and guests ${guests}.` : "."),
           },
         ],
       };
@@ -534,57 +466,57 @@ function createServer(
 
   /*
    * --------------------------------------------------
-   * TOOL 2 — RENDER THE BOOKING CARD
+   * TOOL 2 — RENDER BOOKING CARD
    * --------------------------------------------------
    */
 
   registerAppTool(
     server,
-
     "render_booking_card",
-
     {
-      title:
-        "Show Island Adventures charter availability",
+      title: "Show Island Adventures charter recommendation",
 
       description:
-        "Display the Island Adventures recommendation and availability card for the trip selected by find_trip. Use this immediately after find_trip so the customer can continue toward booking with as little friction as possible.",
+        "Render the Island Adventures recommendation selected by find_trip. " +
+        "Always call find_trip first. Pass the selected trip key and the customer's guest count when known.",
 
       annotations: {
-        readOnlyHint:
-          true,
-
-        destructiveHint:
-          false,
-
-        openWorldHint:
-          false,
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
       },
 
       inputSchema: {
-        trip:
-          z
-            .enum([
-              "snorkel",
-              "sandbar",
-              "sunset",
-              "custom",
-              "group",
-            ])
-            .describe(
-              "The Island Adventures trip selected by find_trip."
-            ),
+        trip: z
+          .enum([
+            "snorkel",
+            "sandbar",
+            "sunset",
+            "custom",
+            "group",
+          ])
+          .describe(
+            "The Island Adventures trip selected by find_trip."
+          ),
+
+        guests: z
+          .number()
+          .int()
+          .min(1)
+          .max(12)
+          .optional()
+          .describe(
+            "The customer's group size from the existing conversation."
+          ),
       },
 
       outputSchema: {
-        trip:
-          tripSchema,
+        trip: tripSchema,
       },
 
       _meta: {
         ui: {
-          resourceUri:
-            BOOKING_CARD_URI,
+          resourceUri: BOOKING_CARD_URI,
         },
 
         "openai/outputTemplate":
@@ -594,28 +526,38 @@ function createServer(
           true,
 
         "openai/toolInvocation/invoking":
-          "Finding the best Island Adventures option…",
+          "Preparing your private charter recommendation…",
 
         "openai/toolInvocation/invoked":
-          "Your private charter recommendation is ready.",
+          "Your Island Adventures recommendation is ready.",
       },
     },
 
-    async ({
-      trip,
-    }) => {
-      const authoritativeTrip =
-        trips[
-          trip as TripKey
-        ];
+    async ({ trip, guests }) => {
+      const key =
+        trip as TripKey;
 
-      if (
-        !authoritativeTrip
-      ) {
+      const baseTrip =
+        trips[key];
+
+      if (!baseTrip) {
         throw new Error(
           "Unknown Island Adventures charter."
         );
       }
+
+      const authoritativeTrip = {
+        ...baseTrip,
+
+        guestCount:
+          guests,
+
+        recommendation:
+          buildRecommendation(
+            key,
+            guests
+          ),
+      };
 
       return {
         structuredContent: {
@@ -623,17 +565,19 @@ function createServer(
             authoritativeTrip,
         },
 
+        /*
+         * Keep the text intentionally short.
+         * The card contains the buying information
+         * and owns the conversion action.
+         */
         content: [
           {
-            type:
-              "text",
-
+            type: "text",
             text:
-              `${authoritativeTrip.name}\n\n` +
-              `${authoritativeTrip.recommendation}\n\n` +
-              `Private charter for up to ${authoritativeTrip.maxGuests} guests.\n` +
-              `Starting at $${authoritativeTrip.startingPrice}.\n` +
-              `Check Private Charter Availability: ${authoritativeTrip.bookingUrl}`,
+              `${authoritativeTrip.name} is the best fit` +
+              (guests
+                ? ` for your group of ${guests}.`
+                : "."),
           },
         ],
       };
@@ -645,7 +589,7 @@ function createServer(
 
 /*
  * --------------------------------------------------
- * CLOUDFLARE STATELESS MCP ENDPOINT
+ * CLOUDFLARE STATELESS STREAMABLE HTTP MCP
  * --------------------------------------------------
  */
 
@@ -656,12 +600,7 @@ export default {
     ctx: ExecutionContext
   ) {
     return createMcpHandler(
-      () =>
-        createServer(env)
-    )(
-      request,
-      env,
-      ctx
-    );
+      () => createServer(env)
+    )(request, env, ctx);
   },
 } satisfies ExportedHandler<Env>;
