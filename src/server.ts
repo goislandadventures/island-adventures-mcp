@@ -14,6 +14,12 @@ interface Env {
 const BOOKING_CARD_URI =
   "ui://island-adventures/booking-card-v2.html";
 
+const OPENAI_CHALLENGE_PATH =
+  "/.well-known/openai-apps-challenge";
+
+const OPENAI_CHALLENGE_TOKEN =
+  "qjNyani4CQnrkSb8T2te-moSBrL0FnE6tnZaEBysCb0";
+
 /*
  * --------------------------------------------------
  * SCHEMAS
@@ -446,10 +452,6 @@ function createServer(env: Env) {
       let selected: TripKey =
         activity ?? "custom";
 
-      /*
-       * More than six passengers requires
-       * Island Adventures' two-boat product.
-       */
       if (
         guests &&
         guests > 6
@@ -604,10 +606,6 @@ function createServer(env: Env) {
             authoritativeTrip,
         },
 
-        /*
-         * Deliberately short.
-         * The UI card owns the buying experience.
-         */
         content: [
           {
             type: "text",
@@ -630,7 +628,7 @@ function createServer(env: Env) {
 
 /*
  * --------------------------------------------------
- * CLOUDFLARE STATELESS STREAMABLE HTTP MCP
+ * CLOUDFLARE WORKER
  * --------------------------------------------------
  */
 
@@ -640,6 +638,36 @@ export default {
     env: Env,
     ctx: ExecutionContext
   ) {
+    const url =
+      new URL(request.url);
+
+    /*
+     * OpenAI plugin publisher-domain verification.
+     * Must return ONLY the challenge token as plain text.
+     */
+    if (
+      url.pathname ===
+      OPENAI_CHALLENGE_PATH
+    ) {
+      return new Response(
+        OPENAI_CHALLENGE_TOKEN,
+        {
+          status: 200,
+
+          headers: {
+            "content-type":
+              "text/plain; charset=utf-8",
+
+            "cache-control":
+              "no-store",
+          },
+        }
+      );
+    }
+
+    /*
+     * Existing MCP app.
+     */
     return createMcpHandler(
       () =>
         createServer(env)
