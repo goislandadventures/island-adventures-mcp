@@ -581,6 +581,10 @@
       } catch (_) {}
     }
 
+    /*
+     * Initial result if ChatGPT already populated
+     * the widget before this script runs.
+     */
     try {
       const initial =
         window.openai?.toolOutput;
@@ -590,6 +594,29 @@
       }
     } catch (_) {}
 
+    /*
+     * ChatGPT can populate or replace toolOutput
+     * after the iframe has already loaded.
+     */
+    window.addEventListener(
+      "openai:set_globals",
+      (event) => {
+        try {
+          const output =
+            event.detail?.globals?.toolOutput ??
+            window.openai?.toolOutput;
+
+          if (output?.trip) {
+            renderTrip(output);
+          }
+        } catch (_) {}
+      },
+      { passive: true }
+    );
+
+    /*
+     * Standard MCP Apps tool-result notification.
+     */
     window.addEventListener(
       "message",
       (event) => {
