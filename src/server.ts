@@ -99,24 +99,15 @@ const trips = {
     location: "Angler House Marina · Islamorada, Florida Keys",
     bookingUrl:
       "https://reservations.waverez.com/islandadventures/details/5819",
-    startingPrice: 379,
+    startingPrice: 359,
     priceNote:
-      "Published charter pricing for 1–6 guests. Check WaveRez for live date and time availability.",
+      "Current WaveRez listing starts at $359 and offers 2, 3, and 4-hour options. Check WaveRez for the live price for the duration you choose.",
     options: [
       {
-        duration: "2 hours",
-        price: 379,
-        label: "A quick private sandbar escape.",
-      },
-      {
-        duration: "3 hours",
-        price: 489,
-        label: "Plenty of time to settle in and relax.",
-      },
-      {
-        duration: "4 hours",
-        price: 619,
-        label: "Best when your group wants a longer, unhurried day on the water.",
+        duration: "2–4 hours",
+        price: 359,
+        pricePrefix: "From",
+        label: "Choose a 2, 3, or 4-hour private sandbar charter in WaveRez.",
       },
     ],
     highlights: [
@@ -194,11 +185,12 @@ const trips = {
       "https://reservations.waverez.com/islandadventures/details/5822",
     startingPrice: 1279,
     priceNote:
-      "Published 4-hour large-group charter price for 7–12 guests. Check WaveRez for live date and departure availability.",
+      "Current WaveRez listing starts at $1,279 for the 4-hour large-group charter. Check WaveRez for live date and departure availability.",
     options: [
       {
         duration: "4 hours",
         price: 1279,
+        pricePrefix: "From",
         label: "Two boats and two captains for 7–12 guests.",
       },
     ],
