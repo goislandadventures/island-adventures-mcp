@@ -2,37 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Island Adventures Charter</title>
-
   <style>
     :root {
       color-scheme: light dark;
-
-      --bg: #ffffff;
       --card: #ffffff;
       --soft: #f7f8fa;
       --text: #111827;
       --muted: #667085;
       --line: #e5e7eb;
-
       --brand-green: #93c900;
       --brand-orange: #f15a24;
       --brand-blue: #334b9b;
-
       --button: #111827;
       --button-text: #ffffff;
-
       --radius: 18px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #171717;
         --card: #202020;
         --soft: #292929;
         --text: #f7f7f7;
@@ -43,22 +32,13 @@
       }
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       background: transparent;
       color: var(--text);
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -78,18 +58,10 @@
 
     .brand-bar {
       height: 5px;
-      background:
-        linear-gradient(
-          90deg,
-          var(--brand-blue) 0 28%,
-          var(--brand-green) 28% 68%,
-          var(--brand-orange) 68% 100%
-        );
+      background: linear-gradient(90deg, var(--brand-blue) 0 28%, var(--brand-green) 28% 68%, var(--brand-orange) 68% 100%);
     }
 
-    .content {
-      padding: 22px 22px 18px;
-    }
+    .content { padding: 22px 22px 18px; }
 
     .eyebrow {
       margin: 0 0 8px;
@@ -142,7 +114,6 @@
 
     .section-label {
       margin: 0 0 6px;
-      color: var(--text);
       font-size: 11px;
       font-weight: 850;
       letter-spacing: 0.06em;
@@ -188,7 +159,6 @@
     }
 
     .option {
-      position: relative;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 10px 16px;
@@ -196,25 +166,6 @@
       border: 1px solid var(--line);
       border-radius: 13px;
       background: var(--card);
-    }
-
-    .option.popular {
-      border-color: var(--brand-green);
-    }
-
-    .popular-badge {
-      position: absolute;
-      top: -8px;
-      right: 12px;
-      padding: 3px 7px;
-      background: var(--brand-green);
-      color: #111827;
-      border-radius: 999px;
-      font-size: 9px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
     }
 
     .option-duration {
@@ -226,6 +177,7 @@
       font-size: 15px;
       font-weight: 850;
       text-align: right;
+      white-space: nowrap;
     }
 
     .option-label {
@@ -234,6 +186,13 @@
       color: var(--muted);
       font-size: 12.5px;
       line-height: 1.35;
+    }
+
+    .price-note {
+      margin: 9px 2px 0;
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.4;
     }
 
     .highlights {
@@ -265,14 +224,8 @@
       font-size: 13px;
     }
 
-    .location-label {
-      color: var(--muted);
-    }
-
-    .location-value {
-      text-align: right;
-      font-weight: 700;
-    }
+    .location-label { color: var(--muted); }
+    .location-value { text-align: right; font-weight: 700; }
 
     .footer {
       padding: 16px 18px 17px;
@@ -292,23 +245,11 @@
       font-size: 15px;
       font-weight: 850;
       cursor: pointer;
-      transition:
-        transform 120ms ease,
-        opacity 120ms ease;
     }
 
-    .button:hover {
-      opacity: 0.92;
-    }
-
-    .button:active {
-      transform: scale(0.992);
-    }
-
-    .button:disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
+    .button:hover { opacity: 0.92; }
+    .button:active { transform: scale(0.992); }
+    .button:disabled { cursor: not-allowed; opacity: 0.55; }
 
     .booking-note {
       margin: 9px 5px 0;
@@ -330,27 +271,16 @@
     }
 
     @media (max-width: 520px) {
-      .content {
-        padding: 19px 17px 16px;
-      }
-
-      h1 {
-        font-size: 23px;
-      }
-
-      .highlights {
-        grid-template-columns: 1fr;
-      }
+      .content { padding: 19px 17px 16px; }
+      h1 { font-size: 23px; }
+      .highlights { grid-template-columns: 1fr; }
     }
   </style>
 </head>
-
 <body>
   <div class="shell">
     <div class="card" id="app">
-      <div class="loading">
-        Finding the easiest way to get you on the water…
-      </div>
+      <div class="loading">Finding the easiest way to get you on the water…</div>
     </div>
   </div>
 
@@ -368,11 +298,7 @@
 
     function money(value) {
       const number = Number(value);
-
-      if (!Number.isFinite(number)) {
-        return "";
-      }
-
+      if (!Number.isFinite(number)) return "";
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
@@ -381,278 +307,121 @@
     }
 
     function renderOptions(trip) {
-      if (!Array.isArray(trip.options) || trip.options.length === 0) {
-        return "";
-      }
+      if (!Array.isArray(trip.options) || trip.options.length === 0) return "";
+
+      const note = trip.priceNote
+        ? `<div class="price-note">${escapeHtml(trip.priceNote)}</div>`
+        : "";
 
       return `
         <div class="price-heading">
           <h2>Choose what fits your day</h2>
-
-          ${
-            trip.startingPrice
-              ? `
-                <div class="starting-price">
-                  From <strong>${money(trip.startingPrice)}</strong>
-                </div>
-              `
-              : ""
-          }
+          ${trip.startingPrice ? `<div class="starting-price">From <strong>${money(trip.startingPrice)}</strong></div>` : ""}
         </div>
-
         <div class="options">
-          ${trip.options
-            .map(
-              (option) => `
-                <div class="option ${option.popular ? "popular" : ""}">
-                  ${
-                    option.popular
-                      ? `<div class="popular-badge">Popular choice</div>`
-                      : ""
-                  }
-
-                  <div class="option-duration">
-                    ${escapeHtml(option.duration)}
-                  </div>
-
-                  <div class="option-price">
-                    ${money(option.price)}
-                  </div>
-
-                  <div class="option-label">
-                    ${escapeHtml(option.label)}
-                  </div>
-                </div>
-              `
-            )
-            .join("")}
+          ${trip.options.map((option) => {
+            const prefix = option.pricePrefix ? `${escapeHtml(option.pricePrefix)} ` : "";
+            return `
+              <div class="option">
+                <div class="option-duration">${escapeHtml(option.duration)}</div>
+                <div class="option-price">${prefix}${money(option.price)}</div>
+                <div class="option-label">${escapeHtml(option.label)}</div>
+              </div>
+            `;
+          }).join("")}
         </div>
+        ${note}
       `;
     }
 
     function renderHighlights(trip) {
-      if (!Array.isArray(trip.highlights) || trip.highlights.length === 0) {
-        return "";
-      }
-
-      return `
-        <div class="highlights">
-          ${trip.highlights
-            .map(
-              (item) => `
-                <div class="highlight">
-                  ${escapeHtml(item)}
-                </div>
-              `
-            )
-            .join("")}
-        </div>
-      `;
+      if (!Array.isArray(trip.highlights) || trip.highlights.length === 0) return "";
+      return `<div class="highlights">${trip.highlights.map((item) => `<div class="highlight">${escapeHtml(item)}</div>`).join("")}</div>`;
     }
 
     function renderTrip(data) {
       const trip = data?.trip;
-
-      if (!trip) {
-        return;
-      }
+      if (!trip) return;
 
       app.innerHTML = `
         <div class="brand-bar"></div>
-
         <div class="content">
-          <div class="eyebrow">
-            Island Adventures · Islamorada
-          </div>
-
+          <div class="eyebrow">Island Adventures · Islamorada</div>
           <h1>${escapeHtml(trip.name)}</h1>
-
-          <div class="best-fit">
-            <span class="dot"></span>
-            Best match for your request
-          </div>
-
-          <p class="description">
-            ${escapeHtml(trip.description)}
-          </p>
-
+          <div class="best-fit"><span class="dot"></span>Best match for your request</div>
+          <p class="description">${escapeHtml(trip.description)}</p>
           <div class="why">
             <div class="section-label">Why this fits</div>
-
-            <p>
-              ${escapeHtml(trip.recommendation)}
-            </p>
+            <p>${escapeHtml(trip.recommendation)}</p>
           </div>
-
           ${renderOptions(trip)}
-
           ${renderHighlights(trip)}
-
           <div class="location">
-            <span class="location-label">
-              Departure
-            </span>
-
-            <span class="location-value">
-              ${escapeHtml(trip.location)}
-            </span>
+            <span class="location-label">Departure</span>
+            <span class="location-value">${escapeHtml(trip.location)}</span>
           </div>
         </div>
-
         <div class="footer">
-          <button
-            class="button"
-            id="availabilityButton"
-            type="button"
-          >
-            Check Private Charter Availability
-          </button>
-
-          <div class="booking-note">
-            See available dates and times on Island Adventures’ secure WaveRez reservation page. No commitment required to check availability.
-          </div>
+          <button class="button" id="availabilityButton" type="button">Check Private Charter Availability</button>
+          <div class="booking-note">See available dates and times on Island Adventures’ secure WaveRez reservation page. No commitment required to check availability.</div>
         </div>
       `;
 
-      const button =
-        document.getElementById("availabilityButton");
-
-      button.addEventListener(
-        "click",
-        async () => {
-          const url = trip.bookingUrl;
-
-          if (!url) {
-            return;
+      const button = document.getElementById("availabilityButton");
+      button.addEventListener("click", async () => {
+        const url = trip.bookingUrl;
+        if (!url) return;
+        button.disabled = true;
+        button.textContent = "Opening availability…";
+        try {
+          if (window.openai && typeof window.openai.openExternal === "function") {
+            await window.openai.openExternal({ href: url, redirectUrl: false });
+          } else {
+            window.open(url, "_blank", "noopener,noreferrer");
           }
-
-          button.disabled = true;
-          button.textContent =
-            "Opening availability…";
-
-          try {
-            if (
-              window.openai &&
-              typeof window.openai.openExternal === "function"
-            ) {
-              await window.openai.openExternal({
-                href: url,
-                redirectUrl: false
-              });
-            } else {
-              window.open(
-                url,
-                "_blank",
-                "noopener,noreferrer"
-              );
-            }
-          } catch (error) {
-            console.error(
-              "Unable to open availability:",
-              error
-            );
-
-            window.open(
-              url,
-              "_blank",
-              "noopener,noreferrer"
-            );
-          } finally {
-            button.disabled = false;
-            button.textContent =
-              "Check Private Charter Availability";
-          }
+        } catch (error) {
+          console.error("Unable to open availability:", error);
+          window.open(url, "_blank", "noopener,noreferrer");
+        } finally {
+          button.disabled = false;
+          button.textContent = "Check Private Charter Availability";
         }
-      );
+      });
 
       notifyHeight();
     }
 
     function notifyHeight() {
       try {
-        if (
-          window.openai &&
-          typeof window.openai.notifyIntrinsicHeight === "function"
-        ) {
-          window.openai.notifyIntrinsicHeight(
-            document.documentElement.scrollHeight
-          );
+        if (window.openai && typeof window.openai.notifyIntrinsicHeight === "function") {
+          window.openai.notifyIntrinsicHeight(document.documentElement.scrollHeight);
         }
       } catch (_) {}
     }
 
-    /*
-     * Initial result if ChatGPT already populated
-     * the widget before this script runs.
-     */
     try {
-      const initial =
-        window.openai?.toolOutput;
-
-      if (initial?.trip) {
-        renderTrip(initial);
-      }
+      const initial = window.openai?.toolOutput;
+      if (initial?.trip) renderTrip(initial);
     } catch (_) {}
 
-    /*
-     * ChatGPT can populate or replace toolOutput
-     * after the iframe has already loaded.
-     */
-    window.addEventListener(
-      "openai:set_globals",
-      (event) => {
-        try {
-          const output =
-            event.detail?.globals?.toolOutput ??
-            window.openai?.toolOutput;
+    window.addEventListener("openai:set_globals", (event) => {
+      try {
+        const output = event.detail?.globals?.toolOutput ?? window.openai?.toolOutput;
+        if (output?.trip) renderTrip(output);
+      } catch (_) {}
+    }, { passive: true });
 
-          if (output?.trip) {
-            renderTrip(output);
-          }
-        } catch (_) {}
-      },
-      { passive: true }
-    );
+    window.addEventListener("message", (event) => {
+      if (event.source !== window.parent) return;
+      const message = event.data;
+      if (!message || message.jsonrpc !== "2.0") return;
+      if (message.method === "ui/notifications/tool-result") {
+        const output = message.params?.structuredContent;
+        if (output?.trip) renderTrip(output);
+      }
+    }, { passive: true });
 
-    /*
-     * Standard MCP Apps tool-result notification.
-     */
-    window.addEventListener(
-      "message",
-      (event) => {
-        if (event.source !== window.parent) {
-          return;
-        }
-
-        const message = event.data;
-
-        if (
-          !message ||
-          message.jsonrpc !== "2.0"
-        ) {
-          return;
-        }
-
-        if (
-          message.method ===
-          "ui/notifications/tool-result"
-        ) {
-          const output =
-            message.params?.structuredContent;
-
-          if (output?.trip) {
-            renderTrip(output);
-          }
-        }
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      "load",
-      notifyHeight,
-      { once: true }
-    );
+    window.addEventListener("load", notifyHeight, { once: true });
   </script>
 </body>
 </html>
