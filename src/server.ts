@@ -61,7 +61,7 @@ const trips = {
     maxGuests: 6,
     location: "Angler House Marina · Islamorada, Florida Keys",
     bookingUrl:
-      "https://reservations.waverez.com/islandadventures/details/5818",
+      "https://reservations.waverez.com/islandadventures/details/5818?from=googlewebleads",
     startingPrice: 399,
     priceNote:
       "Published charter pricing for 1–6 guests. Check WaveRez for live date and time availability.",
@@ -98,7 +98,7 @@ const trips = {
     maxGuests: 6,
     location: "Angler House Marina · Islamorada, Florida Keys",
     bookingUrl:
-      "https://reservations.waverez.com/islandadventures/details/5819",
+      "https://reservations.waverez.com/islandadventures/details/5819?from=googlewebleads",
     startingPrice: 359,
     priceNote:
       "Current WaveRez listing starts at $359 and offers 2, 3, and 4-hour options. Check WaveRez for the live price for the duration you choose.",
@@ -126,7 +126,7 @@ const trips = {
     maxGuests: 6,
     location: "Angler House Marina · Islamorada, Florida Keys",
     bookingUrl:
-      "https://reservations.waverez.com/islandadventures/details/5820",
+      "https://reservations.waverez.com/islandadventures/details/5820?from=googlewebleads",
     startingPrice: 479,
     priceNote:
       "Current WaveRez listing starts at $479. Check WaveRez for live date, time, and final checkout pricing.",
@@ -154,7 +154,7 @@ const trips = {
     maxGuests: 6,
     location: "Angler House Marina · Islamorada, Florida Keys",
     bookingUrl:
-      "https://reservations.waverez.com/islandadventures/details/5821",
+      "https://reservations.waverez.com/islandadventures/details/5821?from=googlewebleads",
     startingPrice: 579,
     priceNote:
       "Current WaveRez listing starts at $579 for 2–4 hour options. Check WaveRez for the live price for the duration you choose.",
@@ -182,7 +182,7 @@ const trips = {
     maxGuests: 12,
     location: "Angler House Marina · Islamorada, Florida Keys",
     bookingUrl:
-      "https://reservations.waverez.com/islandadventures/details/5822",
+      "https://reservations.waverez.com/islandadventures/details/5822?from=googlewebleads",
     startingPrice: 1279,
     priceNote:
       "Current WaveRez listing starts at $1,279 for the 4-hour large-group charter. Check WaveRez for live date and departure availability.",
