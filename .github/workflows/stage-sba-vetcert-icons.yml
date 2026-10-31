@@ -23,6 +23,8 @@ jobs:
             'https://legacy.sba.gov/sites/default/files/2024-05/decals-and-icons.zip' \
             -o prelaunch/vetcert/assets/sba-decals-and-icons.zip
           unzip -t prelaunch/vetcert/assets/sba-decals-and-icons.zip
+          unzip -p prelaunch/vetcert/assets/sba-decals-and-icons.zip 'Veteran-Owned Certified.png' > prelaunch/vetcert/assets/sba-veteran-owned-certified.png
+          test -s prelaunch/vetcert/assets/sba-veteran-owned-certified.png
           unzip -l prelaunch/vetcert/assets/sba-decals-and-icons.zip | tail -n 15
       - name: Commit archival asset to staging branch only
         shell: bash
@@ -30,7 +32,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add prelaunch/vetcert/assets/sba-decals-and-icons.zip
+          git add prelaunch/vetcert/assets/sba-decals-and-icons.zip prelaunch/vetcert/assets/sba-veteran-owned-certified.png
           if ! git diff --cached --quiet; then
             git commit -m 'Stage official SBA icon ZIP (not publicly deployed)'
             git push origin HEAD:prelaunch/vetcert-rollout
