@@ -1,0 +1,37 @@
+name: Stage official SBA icon archive (no site deployment)
+on:
+  push:
+    branches: [prelaunch/vetcert-rollout]
+    paths:
+      - .github/workflows/stage-sba-vetcert-icons.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  archive-official-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: prelaunch/vetcert-rollout
+      - name: Download unmodified official SBA digital icon archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p prelaunch/vetcert/assets
+          curl --fail --location --retry 3 --max-time 90 \
+            'https://legacy.sba.gov/sites/default/files/2024-05/decals-and-icons.zip' \
+            -o prelaunch/vetcert/assets/sba-decals-and-icons.zip
+          unzip -t prelaunch/vetcert/assets/sba-decals-and-icons.zip
+          unzip -l prelaunch/vetcert/assets/sba-decals-and-icons.zip | tail -n 15
+      - name: Commit archival asset to staging branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add prelaunch/vetcert/assets/sba-decals-and-icons.zip
+          if ! git diff --cached --quiet; then
+            git commit -m 'Stage official SBA icon ZIP (not publicly deployed)'
+            git push origin HEAD:prelaunch/vetcert-rollout
+          fi
