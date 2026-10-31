@@ -6,7 +6,8 @@ Candor Multimedia, LLC (DBA Island Adventures) is pursuing SBA Veteran Small Bus
 ## Official SBA asset
 - Source: https://legacy.sba.gov/brand/for-partners/sba-certified-businesses
 - Exact official icon archive: https://legacy.sba.gov/sites/default/files/2024-05/decals-and-icons.zip
-- Run `sh prelaunch/vetcert/fetch-official-icons.sh` from the repository root on an internet-connected machine to retrieve and inspect the official archive.
+- **Downloaded and staged:** `assets/sba-decals-and-icons.zip` (original SBA bundle) and `assets/sba-veteran-owned-certified.png` (the unmodified `Veteran-Owned Certified.png` extracted from that bundle). These are repository files only; none are deployed on the live website.
+- Refresh/check the archive with `sh prelaunch/vetcert/fetch-official-icons.sh` from the repository root on an internet-connected machine.
 - Do **not** invent, redraw, recolor, or substitute the generic SBA agency logo for its VetCert badge.
 - Distinguish VOSB from SDVOSB. Select the **Veteran-Owned Small Business (VOSB)** badge only upon confirming that exact category in the SBA approval.
 - Official SBA guidance permits eligible certified firms to use the icon on their own websites and social media profiles, but not in paid ads, promotional materials, or anything implying SBA endorsement. Remove immediately if status lapses.
